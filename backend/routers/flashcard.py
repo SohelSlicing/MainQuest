@@ -1,19 +1,19 @@
 from fastapi import APIRouter,  status, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel as BM
 
-router = APIRouter()
+router = APIRouter(prefix= "/flashcard")
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_core.pydantic_v1 import BaseModel as BM2, Field
 from langchain.prompts.prompt import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import List
 from config import GOOGLE_API_KEY
 
-class flashcards(BaseModel):
+class flashcards(BM2):
     question: List[str]
     answer: List[str]
 
@@ -32,12 +32,13 @@ chain = json_promt | model | parser
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-class generate(BaseModel):
+class generate(BM):
     text: str
     number: int
 
 @router.post("/generate")
 def get_response(req: generate):
+
     response = chain.invoke({"number": str(req.number), "text": req.text})
 
     if not response:
@@ -45,7 +46,3 @@ def get_response(req: generate):
                             detail= "No response obtained from Gemini")
     
     return response
-
-@router.post("/")
-def test(mynum: str):
-    return {"message": "passed", "num": mynum}  
